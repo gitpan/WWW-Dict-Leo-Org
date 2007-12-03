@@ -5,7 +5,7 @@
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.28;
+$WWW::Dict::Leo::Org::VERSION = 1.29;
 
 use strict;
 use warnings;
@@ -499,6 +499,63 @@ espaniol to german.
 
 =back
 
+=head1 METHODS
+
+=head2 translate($term)
+
+Use this method after initialization to connect to dict.leo.org
+and translate the given term. It returns an array of hashes containing
+the actual results.
+
+ use WWW::Dict::Leo::Org;
+ use Data::Dumper;
+ my $leo = new WWW::Dict::Leo::Org();
+ my @matches = $leo->translate("schinken");
+ print Dumper(\@matches);
+
+which prints:
+
+ $VAR1 = [
+          {
+            'left' => '--title--',
+            'right' => 'Unmittelbare Treffer'
+          },
+          {
+            'left' => ' ham',
+            'right' => 'der Schinken'
+          },
+          {
+            'left' => ' tome   chiefly  [hum.]',
+            'right' => 'der Schinken   - dickes Buch [fig.] [hum.]'
+          },
+          {
+            'left' => '--title--',
+            'right' => 'Zusammengesetzte Einträge'
+          },
+          {
+            'left' => ' gammon',
+            'right' => 'geräucherter Schinken'
+          }
+        ];
+
+You might take a look at the B<leo> script how to process
+this data.
+
+=head2 maxsize()
+
+Returns the size of the largest returned term (left side).
+
+=head2 lines()
+
+Returns the number of translation results.
+
+=head2 form()
+
+Returns the submitted form uri.
+
+=head1 SEE ALSO
+
+L<leo>
 
 =head1 COPYRIGHT
 
@@ -507,7 +564,6 @@ Copyright (c) 2007 by Thomas Linden
 
 L<http://dict.leo.org/> -
 Copyright (c) 1995-2007 LEO Dictionary Team.
-
 
 =head1 AUTHOR
 
@@ -521,6 +577,6 @@ Please don't forget to add debugging output!
 
 =head1 VERSION
 
-1.28
+1.29
 
 =cut

@@ -1,9 +1,25 @@
+1.29:
+
+Added changelog entry for 1.28 (actually I forgot it)
+
+Added documentation for the methods of the module (forgotten too)
+
+
+1.28:
+
+Transformed the script into a installable perl module. 'leo'
+itself still exists but uses now this module for the actual
+translation job. The perl module WWW::Dict::Leo::Org can
+be used from perl scipts and applications for translation.
+
+
 1.27:
 
 fixed site updates on dict.leo.org - hey, they finally fixed some faulty html
 which in fact caused parse errors in the script.
 
 changed the default user agent to a some more recent one.
+
 
 1.26:
 
@@ -14,6 +30,7 @@ bugfix - removed gzip accept header.
 
 fixed latest site update, they added javascript
 popup-links. Thanks to Sylvia for the hint.
+
 
 1.24:
 
