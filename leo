@@ -16,13 +16,12 @@
 # or service marks of their respective holders.
 
 use lib qw(.);
-use Org;
 
 use strict;
 use Getopt::Long;
 use DB_File;
 use POSIX qw(isatty);
-#use WWW::Dict::Leo::Org;
+use WWW::Dict::Leo::Org;
 use Data::Dumper;
 
 
@@ -35,7 +34,7 @@ my $default_c = "\033[0m";    # reset default terminal color
 my $bold_c    = "\033[0;34m"; # blue color
 my $copy_c    = "\033[0;35m"; # copyright message color (green)
 
-my $version   = "1.28";
+my $version   = "1.30";
 my $config    = $ENV{HOME} . "/.leo";
 my $cache     = $ENV{HOME} . "/.leo-CACHE.db";
 
@@ -604,6 +603,6 @@ browser, what is not prohibited. At least not today.
 
 =head1 VERSION
 
-This is the manpage for B<leo> version B<1.28>.
+This is the manpage for B<leo> version B<1.30>.
 
 =cut

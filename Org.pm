@@ -5,7 +5,7 @@
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.29;
+$WWW::Dict::Leo::Org::VERSION = 1.30;
 
 use strict;
 use warnings;
@@ -577,6 +577,6 @@ Please don't forget to add debugging output!
 
 =head1 VERSION
 
-1.29
+1.30
 
 =cut

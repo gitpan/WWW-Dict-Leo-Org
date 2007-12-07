@@ -1,3 +1,12 @@
+1.30:
+
+Fixed bug in leo script, it did not load WWW::Dict::Leo::Org but just
+Org, which I did during development, but which doesn't work after
+installation.
+
+Updated the version in leo script to 1.30 too.
+
+
 1.29:
 
 Added changelog entry for 1.28 (actually I forgot it)
