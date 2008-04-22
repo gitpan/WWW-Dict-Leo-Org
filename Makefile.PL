@@ -1,3 +1,6 @@
+#
+# made for WWW::Dict::Leo::Org 1.33 and up
+
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
@@ -6,8 +9,10 @@ WriteMakefile(
   'EXE_FILES'    => [ 'leo' ],
   'clean'        => { FILES => '*~' },
   'EXCLUDE_EXT'  => [ qw(README) ],
-  'PREREQ_PM'    => { 'Carp::Heavy' => 0,
-                      'IO::Socket' => 0,
-                      'MIME::Base64' => 0 }
+  'PREREQ_PM'    => { 'Carp::Heavy'       => 0,
+                      'IO::Socket'        => 0,
+                      'MIME::Base64'      => 0,
+		      'HTML::TableParser' => 0
+		    }
 );
 

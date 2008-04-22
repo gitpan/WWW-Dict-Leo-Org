@@ -1,3 +1,31 @@
+1.33:
+
+Replaced handcrafted html parser by HTML::TableParser module.
+It was over seven years old, so time has come. The new parsing
+should now be much more stable and catch most, if not all,
+tinkering on dict.leo.org.
+
+The organization of the array of hashes returned by ::translate()
+has changed. Take a look at the example in the pod or view the
+supplied 'leo' script how to use it.
+
+1.32:
+
+Fixed strange packaging bug.
+
+Fixed yet another parsing bug (there are now titles formatted different than
+other titles, damn).
+
+Changed default translation direction to 0, so that dict.leo.org determines
+automatically the direction to use.
+
+
+1.31:
+
+Fixed dict.leo.org siteupdates (back to stoneage: they added some
+invalid html again).
+
+
 1.30:
 
 Fixed bug in leo script, it did not load WWW::Dict::Leo::Org but just

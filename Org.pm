@@ -1,11 +1,11 @@
 #
-# Copyleft (l) 2000-2007 by Thomas Linden <tom@daemon.de>. leo may be
+# Copyleft (l) 2000-2008 by Thomas Linden <tom@daemon.de>. leo may be
 # used and distributed under the terms of the GNU General Public License.
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.30;
+$WWW::Dict::Leo::Org::VERSION = 1.33;
 
 use strict;
 use warnings;
@@ -14,6 +14,7 @@ use Carp::Heavy;
 use Carp;
 use IO::Socket;
 use MIME::Base64;
+use HTML::TableParser;
 
 sub debug;
 
@@ -32,7 +33,14 @@ sub new {
     "-SpellTolerance" => "standard",  # on, off
     "-Morphology" => "standard",      # none, forcedAll
     "-CharTolerance" => "relaxed",    # fuzzy, exact
-    "-Language" => "de2en",           # en2de, de2fr, fr2de, de2es, es2de
+    "-Language" => "en",           # en2de, de2fr, fr2de, de2es, es2de
+
+    "data" => {}, # the results
+    "section" => [],
+    "title" => "",
+    "segments" => [],
+    "Maxsize" => 0,
+    "Linecount" => 0,
   );
 
   foreach my $key (keys %param) {
@@ -211,142 +219,63 @@ Accept-Language: en_US, en\r\n);
     return ();
   }
 
-  #
-  # remove the boring html stuff and prepare the formatting stage
-  #
-  $this->debug( "cleaning: html");
+  $site =~ s/(<table[^>]*>)/\n$1\n/g;
+  $site =~ s/(<\/table[^>]*>)/\n$1\n/g;
+  #print $site;
 
-  # fetch interesting part of the page
-  $site =~ s#^.*<form action(.+?)</td></tr> </table>.*$#$1#is;
+  my @request = ({
+		  id  => 3.6,
+		  row => sub { $this->row(@_); }
+		  }
+		 );
+  my $p = HTML::TableParser->new( \@request,
+				  { Decode => 1, Trim => 1, Chomp => 1, DecodeNBSP => 1 } );
+  $p->parse($site);
 
-  # remove HTML attributes
-  $site =~ s/\s*(style|class|size|target|bgcolor|width|height|href|valign|align|colspan|rowspan|cellpadding|cellspacing|border)=("[^"]*"|[a-zA-Z\d\-]*)//gsi;
-
-  # remove image tags
-  $site =~ s/<img[^>]*>//gsi;
-
-  # remove hard whitespaces
-  $site =~ s/&nbsp;//gs;
-
-  # remove remaining tags (beside td and tr)
-  $site =~ s/<\/*(i|a|b|font|small|strong)>//gsi;
-
-  # remove attributes
-  $site =~ s/<(td) nowrap/<$1/gsi;
-
-  # remove form stuff
-  $site =~ s/^.*<TR>(<TD>Unmittelbare.*)/$1/is;
-
-  # fix HTML error in dict.leo.org page (missing </TD>!)
-  # they fixed it - $site =~ s/(<TD>Beispiele)/$1<\/TD>/;
-
-  # remove (eventually existing) link to more translations
-  $site =~ s#<TR><TD>mehr &gt;&gt;</TD></TR>##;
-
-  # remove special char column
-  $site =~ s|<td>&#160;</td>||gsi;
-  $site =~ s|<td>&#160;||gsi;
-  $site =~ s/<td>$//si;
-
-  # remove subs
-  $site =~ s#<sup>..</sup>##gsi;
-
-  # remove empty columns
-  $site =~ s|<td></td>||gsi;
-
-  # remove match hint, we are counting ourselfes
-  $site =~ s/\d+?\s*treffer//i;
-
-  # remove javascript links
-  $site =~ s/<a onclick[^>]*>//gsi;
-
-  # remove glibberish head
-  $site =~ s#^.* <td>  </td> <td> </td> <td>    </td> ##si;
-
-  # make single line per entry
-  my @segments = split /<\/TR>\s*<TR>/i, $site;
-  my $progress;
-
-  $this->debug( "cleaning: done");
-  $this->debug( "got segments prepared:");
-  foreach my $segment (@segments) {
-    if ($segment =~ /^<TD>([^<]*)<\/TD>$/i) {
-      # a title, such as "Verbs and Ver Phrases"
-      my $title = $1;
-      if ($title !~ /(mehr|more) &gt;&gt;/) {
-	# ignore "read more link"
-	$progress .= "$title\n";
-      }
-    }
-    else {
-      # a dict entry
-      my ($left, $right) = split /<\/TD><TD>/i, $segment;
-      $left  |= "";
-      $right |= "";
-      $left =~ s/^\s*//; # dict entries are starting with " "
-      if ("$left$right" =~ /^[\std<>\/]*$/) {
-	$this->debug( "skipping empty left and right segments");
-      }
-      else {
-	$progress .= " $left     $right\n";
-	$this->debug( "segment  left: $left");
-	$this->debug( "segment right: $right\n");
-      }
-    }
+  # put back in order
+  my @matches;
+  foreach my $title (@{$this->{segments}}) {
+    push @matches, { title => $title, data => $this->{data}->{$title} };
   }
 
-  if (! $progress) {
-    croak("whole parsing result empty!");
-  }
-
-  $site = $progress;
-
-  # finally, remove the remaining tags
-  $site =~ s/<\/*TD>//gsi;
-  $site =~ s#<br/>##gsi;
-
-  #
-  # prepare formating
-  #
-  my @lines = split /\n/, $site;
-
-  #
-  # normalize the results
-  #
-  $this->debug( "normalizing segments");
-
-  my($right, $left);
-  foreach (@lines) {
-    if (/^\s/) {
-      # dict entry
-      $linecount++;
-      s/^\s*/ /;
-      s/\s*$//;
-      $left = $right = "";
-      $this->debug( "line: $_\n");
-      ($left, $right) = split /\s\s\s*/;
-      if ($left) {
-        my $leftsize = length($left);
-        $maxsize = $leftsize if($leftsize > $maxsize);
-        push @match, { left => $left, right => $right };
-        $this->debug( "normalized segment  left: $left");
-        $this->debug( "normalized segment right: $right\n");
-      }
-    }
-    else {
-      # title
-      push @match, { left => "--title--", right => $_ };
-      $this->debug( "normalized segment  left: --title--");
-      $this->debug( "normalized segment right: $_\n");
-    }
-  }
-
-  $maxsize += 5;
-  $this->{Linecount} = $linecount;
-  $this->{Maxsize}   = $maxsize;
-
-  return @match;
+  return @matches;
 }
+
+
+sub row {
+  #
+  # divide rows into titles and lang data.
+  # rows with the last one of 5 defined and
+  # where the last and the pre-last are qual
+  # are titles.
+  my ( $this, $tbl_id, $line_no, $data, $udata ) = @_;
+
+  if ($data->[4] && $data->[3] eq $data->[4]) {
+    $this->debug("Probable start of a new section: $data->[4]");
+    if (@{$this->{section}}) {
+      $this->{data}->{ $this->{title} } = $this->{section};
+      push @{$this->{segments}}, $this->{title};
+    }
+
+    if ($data->[4] =~ /^(\d+)/) {
+      $this->debug("Number of results catched: $data->[4]");
+      $this->{Linecount} = $1;
+    }
+    else {
+      $this->{title} = $data->[4];
+    }
+
+    $this->{section} = [];
+  }
+  else {
+    if (length($data->[1]) > $this->{Maxsize}) {
+      $this->{Maxsize} = length($data->[1]);
+    }
+    $this->debug("line: $line_no, left:  $data->[1], right: $data->[3]");
+    push @{$this->{section}}, { left => $data->[1], right => $data->[3] };
+  }
+}
+
 
 sub maxsize {
   my($this) = @_;
@@ -510,33 +439,47 @@ the actual results.
  use WWW::Dict::Leo::Org;
  use Data::Dumper;
  my $leo = new WWW::Dict::Leo::Org();
- my @matches = $leo->translate("schinken");
+ my @matches = $leo->translate("test");
  print Dumper(\@matches);
 
 which prints:
 
  $VAR1 = [
           {
-            'left' => '--title--',
-            'right' => 'Unmittelbare Treffer'
+            'data' => [
+                        {
+                          'left' => 'check',
+                          'right' => 'der Test'
+                        },
+                        {
+                          'left' => 'quiz (Amer.)',
+                          'right' => 'der Test    [Schule]'
+                      ],
+            'title' => 'Unmittelbare Treffer'
           },
           {
-            'left' => ' ham',
-            'right' => 'der Schinken'
+            'data' => [
+                        {
+                          'left' => 'to fail a test',
+                          'right' => 'einen Test nicht bestehen'
+                        },
+                        {
+                          'left' => 'to test',
+                          'right' => 'Tests macheneinen Test machen'
+                        }
+                      ],
+            'title' => 'Verben und Verbzusammensetzungen'
           },
-          {
-            'left' => ' tome   chiefly  [hum.]',
-            'right' => 'der Schinken   - dickes Buch [fig.] [hum.]'
-          },
-          {
-            'left' => '--title--',
-            'right' => 'Zusammengesetzte Einträge'
-          },
-          {
-            'left' => ' gammon',
-            'right' => 'geräucherter Schinken'
+            'data' => [
+                        {
+                          'left' => 'testing  adj.',
+                          'right' => 'im Test'
+                        }
+                      ],
+            'title' => 'Wendungen und Ausdrücke'
           }
         ];
+
 
 You might take a look at the B<leo> script how to process
 this data.
@@ -560,10 +503,10 @@ L<leo>
 =head1 COPYRIGHT
 
 WWW::Dict::Leo::Org -
-Copyright (c) 2007 by Thomas Linden
+Copyright (c) 2007-2008 by Thomas Linden
 
 L<http://dict.leo.org/> -
-Copyright (c) 1995-2007 LEO Dictionary Team.
+Copyright (c) 1995-2008 LEO Dictionary Team.
 
 =head1 AUTHOR
 
@@ -577,6 +520,6 @@ Please don't forget to add debugging output!
 
 =head1 VERSION
 
-1.30
+1.33
 
 =cut

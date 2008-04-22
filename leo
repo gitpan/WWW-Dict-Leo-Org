@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 #
 # This little handy script grabs the german/english translation for a
 # given term from http://dict.leo.org. Thanks the LEO folks for their
@@ -8,14 +8,15 @@
 # the term to be translated. It will then return the results in
 # an unformatted form.
 #
-# $Id: leo,v 1.27 2007/12/01 21:18:14 scip Exp $
+# $Id: leo,v 1.33 2008/04/22 22:23:39 scip Exp $
 #
-# Copyleft (l) 2000-2007 by Thomas Linden <tom@daemon.de>. leo may be
+# Copyleft (l) 2000-2008 by Thomas Linden <tom@daemon.de>. leo may be
 # used and distributed under the terms of the GNU General Public License.
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
 
-use lib qw(.);
+#use lib qw(.);
+#use Org;
 
 use strict;
 use Getopt::Long;
@@ -34,7 +35,7 @@ my $default_c = "\033[0m";    # reset default terminal color
 my $bold_c    = "\033[0;34m"; # blue color
 my $copy_c    = "\033[0;35m"; # copyright message color (green)
 
-my $version   = "1.30";
+my $version   = "1.33";
 my $config    = $ENV{HOME} . "/.leo";
 my $cache     = $ENV{HOME} . "/.leo-CACHE.db";
 
@@ -250,29 +251,24 @@ print "Found $lines matches for '$string' on dict.leo.org:\n";
 #
 # print it out in a formated manner, keep the order of dict.leo.org
 #
-foreach my $entry (@match) {
-  if (! $entry->{left} || ! $entry->{right}) {
-    &parserror("left or right segment empty!");
-  }
-  if ($entry->{left} eq "--title--") {
-    # a title
-    if ($highlight) {
-      print "\n${bold_c}$entry->{right}${default_c}\n";
-    }
-    else {
-      print "\n$entry->{right}\n";
-    }
+foreach my $section (@match) {
+  if ($highlight) {
+    print "\n${bold_c}$section->{title}${default_c}\n";
   }
   else {
-    # dict entry
+    print "\n$section->{title}\n";
+  }
+
+  foreach my $entry (@{$section->{data}}) {
     $entry->{left} =~ s/^(.*)$/$1 . " " x ($maxsize - length($1))/e;
     if ($highlight) {
       $entry->{left}  =~ s/(\Q$string\E)/$bold_c . $1 . $default_c/ei;
       $entry->{right} =~ s/(\Q$string\E)/$bold_c . $1 . $default_c/ei;
     }
-    print $entry->{left} . $entry->{right} . "\n";
+    print " $entry->{left}$entry->{right}\n";
   }
 }
+
 
 print "$copy_c" if $highlight;
 print "\n     Fetched by leo $version via http://dict.leo.org/";
@@ -603,6 +599,6 @@ browser, what is not prohibited. At least not today.
 
 =head1 VERSION
 
-This is the manpage for B<leo> version B<1.30>.
+This is the manpage for B<leo> version B<1.28>.
 
 =cut
