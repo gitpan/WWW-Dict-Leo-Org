@@ -35,7 +35,7 @@ my $default_c = "\033[0m";    # reset default terminal color
 my $bold_c    = "\033[0;34m"; # blue color
 my $copy_c    = "\033[0;35m"; # copyright message color (green)
 
-my $version   = "1.33";
+my $version   = "1.34";
 my $config    = $ENV{HOME} . "/.leo";
 my $cache     = $ENV{HOME} . "/.leo-CACHE.db";
 
@@ -574,9 +574,9 @@ to me, thanks.
 
 =head1 COPYRIGHT
 
-B<leo> copyleft (c) 2000-2007 Thomas Linden. All rights reserved.
+B<leo> copyleft (c) 2000-2008 Thomas Linden. All rights reserved.
 
-http://dict.leo.org/ copyright (c) 1995-2007 LEO Dictionary Team.
+http://dict.leo.org/ copyright (c) 1995-2008 LEO Dictionary Team.
 
 
 The search results returned by B<leo> are based on the work

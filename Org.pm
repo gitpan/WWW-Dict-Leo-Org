@@ -5,7 +5,7 @@
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.33;
+$WWW::Dict::Leo::Org::VERSION = 1.34;
 
 use strict;
 use warnings;
@@ -231,6 +231,12 @@ Accept-Language: en_US, en\r\n);
   my $p = HTML::TableParser->new( \@request,
 				  { Decode => 1, Trim => 1, Chomp => 1, DecodeNBSP => 1 } );
   $p->parse($site);
+
+  # put the rest on the stack, if any
+  if (@{$this->{section}}) {
+    $this->{data}->{ $this->{title} } = $this->{section};
+    push @{$this->{segments}}, $this->{title};
+  }
 
   # put back in order
   my @matches;
@@ -520,6 +526,6 @@ Please don't forget to add debugging output!
 
 =head1 VERSION
 
-1.33
+1.34
 
 =cut
