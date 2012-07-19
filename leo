@@ -15,8 +15,10 @@
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
 
-#use lib qw(.);
+use lib qw(blib/lib);
 #use Org;
+
+use utf8;
 
 use strict;
 use Getopt::Long;
@@ -35,7 +37,7 @@ my $default_c = "\033[0m";    # reset default terminal color
 my $bold_c    = "\033[0;34m"; # blue color
 my $copy_c    = "\033[0;35m"; # copyright message color (green)
 
-my $version   = "1.34";
+my $version   = "1.35";
 my $config    = $ENV{HOME} . "/.leo";
 my $cache     = $ENV{HOME} . "/.leo-CACHE.db";
 
@@ -45,9 +47,10 @@ my $debugging = 0;
 my %conf      = (
 		 use_cache => "no",
 		 use_color => "yes",
+		 use_latin => "yes"
 		 );
 
-my %validopts = qw(use_cache 0 use_color 0 user_agent 0);
+my %validopts = qw(use_cache 0 use_color 0 user_agent 0 use_latin 0);
 my %line      = %validopts;
 my %CACHE     = ();
 my $site      = "";
@@ -261,6 +264,10 @@ foreach my $section (@match) {
 
   foreach my $entry (@{$section->{data}}) {
     $entry->{left} =~ s/^(.*)$/$1 . " " x ($maxsize - length($1))/e;
+    if ($conf{use_latin}) {
+      utf8::decode($entry->{left});
+      utf8::decode($entry->{right});
+    }
     if ($highlight) {
       $entry->{left}  =~ s/(\Q$string\E)/$bold_c . $1 . $default_c/ei;
       $entry->{right} =~ s/(\Q$string\E)/$bold_c . $1 . $default_c/ei;
@@ -272,8 +279,8 @@ foreach my $section (@match) {
 
 print "$copy_c" if $highlight;
 print "\n     Fetched by leo $version via http://dict.leo.org/";
-print "\n     Copyright  ©  LEO  Dictionary Team 1995-2007";
-print "\n     [leo] GPL Copyleft © Thomas Linden 2000-2007\n\n";
+print "\n     Copyright (C) LEO  Dictionary Team 1995-2012";
+print "\n     [leo] GPL Copyleft   Thomas Linden 2000-2012\n\n";
 print "$default_c" if $highlight;
 
 
@@ -456,6 +463,13 @@ if it exists. The following variables are supported:
 
 =over
 
+=item I<use_latin>
+
+Turns on conversion of UTF8 characters to their latin*
+encoding.
+
+Default setting (if not given): B<yes>.
+
 =item I<use_cache>
 
 Controls the use of the cache (see later).
@@ -574,9 +588,9 @@ to me, thanks.
 
 =head1 COPYRIGHT
 
-B<leo> copyleft (c) 2000-2008 Thomas Linden. All rights reserved.
+B<leo> copyleft 2000-2012 Thomas Linden. All rights reserved.
 
-http://dict.leo.org/ copyright (c) 1995-2008 LEO Dictionary Team.
+http://dict.leo.org/ copyright (c) 1995-2012 LEO Dictionary Team.
 
 
 The search results returned by B<leo> are based on the work
@@ -599,6 +613,6 @@ browser, what is not prohibited. At least not today.
 
 =head1 VERSION
 
-This is the manpage for B<leo> version B<1.28>.
+This is the manpage for B<leo> version B<1.35>.
 
 =cut

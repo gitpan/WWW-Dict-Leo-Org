@@ -5,7 +5,7 @@
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.34;
+$WWW::Dict::Leo::Org::VERSION = 1.35;
 
 use strict;
 use warnings;
@@ -23,7 +23,7 @@ sub new {
   my $type = ref( $class ) || $class;
 
   my %settings = (
-    "-Host" => "dict.leo.org",
+    "-Host" => "pda.leo.org",
     "-Port" => 80,
     "-UserAgent" => "Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9",
     "-Proxy" => "",
@@ -219,15 +219,16 @@ Accept-Language: en_US, en\r\n);
     return ();
   }
 
-  $site =~ s/(<table[^>]*>)/\n$1\n/g;
-  $site =~ s/(<\/table[^>]*>)/\n$1\n/g;
+  #$site =~ s/(<table[^>]*>)/\n$1\n/g;
+  #$site =~ s/(<\/table[^>]*>)/\n$1\n/g;
   #print $site;
 
   my @request = ({
-		  id  => 3.6,
+		  id  => 3.1,
 		  row => sub { $this->row(@_); }
 		  }
 		 );
+  $this->{Linecount} = 1;
   my $p = HTML::TableParser->new( \@request,
 				  { Decode => 1, Trim => 1, Chomp => 1, DecodeNBSP => 1 } );
   $p->parse($site);
@@ -244,6 +245,7 @@ Accept-Language: en_US, en\r\n);
     push @matches, { title => $title, data => $this->{data}->{$title} };
   }
 
+
   return @matches;
 }
 
@@ -256,29 +258,23 @@ sub row {
   # are titles.
   my ( $this, $tbl_id, $line_no, $data, $udata ) = @_;
 
-  if ($data->[4] && $data->[3] eq $data->[4]) {
-    $this->debug("Probable start of a new section: $data->[4]");
+  if ($data->[1] && $data->[0] eq $data->[1]) {
+    $this->debug("Probable start of a new section: $data->[1]");
     if (@{$this->{section}}) {
       $this->{data}->{ $this->{title} } = $this->{section};
       push @{$this->{segments}}, $this->{title};
     }
 
-    if ($data->[4] =~ /^(\d+)/) {
-      $this->debug("Number of results catched: $data->[4]");
-      $this->{Linecount} = $1;
-    }
-    else {
-      $this->{title} = $data->[4];
-    }
-
+    $this->{title} = $data->[1];
     $this->{section} = [];
   }
   else {
-    if (length($data->[1]) > $this->{Maxsize}) {
-      $this->{Maxsize} = length($data->[1]);
+    if (length($data->[0]) > $this->{Maxsize}) {
+      $this->{Maxsize} = length($data->[0]);
     }
-    $this->debug("line: $line_no, left:  $data->[1], right: $data->[3]");
-    push @{$this->{section}}, { left => $data->[1], right => $data->[3] };
+    $this->debug("line: $line_no, left:  $data->[0], right: $data->[1]");
+    push @{$this->{section}}, { left => $data->[0], right => $data->[1] };
+    $this->{Linecount}++;
   }
 }
 
@@ -509,10 +505,10 @@ L<leo>
 =head1 COPYRIGHT
 
 WWW::Dict::Leo::Org -
-Copyright (c) 2007-2008 by Thomas Linden
+Copyright (c) 2007-2012 by Thomas Linden
 
 L<http://dict.leo.org/> -
-Copyright (c) 1995-2008 LEO Dictionary Team.
+Copyright (c) 1995-2012 LEO Dictionary Team.
 
 =head1 AUTHOR
 
@@ -526,6 +522,6 @@ Please don't forget to add debugging output!
 
 =head1 VERSION
 
-1.34
+1.35
 
 =cut
