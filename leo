@@ -10,7 +10,7 @@
 #
 # $Id: leo,v 1.33 2008/04/22 22:23:39 scip Exp $
 #
-# Copyleft (l) 2000-2008 by Thomas Linden <tom@daemon.de>. leo may be
+# Copyleft (l) 2000-2013 by Thomas Linden <tom@daemon.de>. leo may be
 # used and distributed under the terms of the GNU General Public License.
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
@@ -37,7 +37,7 @@ my $default_c = "\033[0m";    # reset default terminal color
 my $bold_c    = "\033[0;34m"; # blue color
 my $copy_c    = "\033[0;35m"; # copyright message color (green)
 
-my $version   = "1.35";
+my $version   = "1.36";
 my $config    = $ENV{HOME} . "/.leo";
 my $cache     = $ENV{HOME} . "/.leo-CACHE.db";
 
@@ -60,6 +60,8 @@ my $proxy_pass = "";
 sub debug;
 
 my($o_s, $o_m, $o_c, $o_l, $o_v, $o_h, $o_n, $o_f, $o_d, $o_u, $o_p);
+
+isatty(1) && eval q{ use open OUT => ':locale'};
 
 #
 # commandline options
@@ -97,6 +99,15 @@ my $string = shift;
 if (!$string) {
   $string = <STDIN>;
   chomp $string;
+}
+
+if (eval { require I18N::Langinfo; require Encode; 1 }) {
+  my $codeset = I18N::Langinfo::langinfo(I18N::Langinfo::CODESET());
+  if ($codeset) {
+    for ($string) {
+      $_ = Encode::decode($codeset, $_);
+    }
+  }
 }
 
 #
@@ -255,6 +266,8 @@ print "Found $lines matches for '$string' on dict.leo.org:\n";
 # print it out in a formated manner, keep the order of dict.leo.org
 #
 foreach my $section (@match) {
+  utf8::decode($section->{title}) if ($conf{use_latin});
+
   if ($highlight) {
     print "\n${bold_c}$section->{title}${default_c}\n";
   }
@@ -279,8 +292,8 @@ foreach my $section (@match) {
 
 print "$copy_c" if $highlight;
 print "\n     Fetched by leo $version via http://dict.leo.org/";
-print "\n     Copyright (C) LEO  Dictionary Team 1995-2012";
-print "\n     [leo] GPL Copyleft   Thomas Linden 2000-2012\n\n";
+print "\n     Copyright (C) LEO  Dictionary Team 1995-2013";
+print "\n     [leo] GPL Copyleft   Thomas Linden 2000-2013\n\n";
 print "$default_c" if $highlight;
 
 
@@ -307,7 +320,7 @@ sub usage {
 Translate a term from german to english or vice versa.
 
   -s, --spelltolerance=on|off                   allow spelling errors
-  -m, --morphology=none|forcedAll               provide morphology informations
+  -m, --morphology=none|forcedAll               provide morphology information
   -c, --chartolerance=fuzzy|exact               allow umlaut alternatives
   -l, --language=en|fr|de2(en|fr)|(en|fr)2de    translation direction
   -n, --noescapechars                           dont use escapes for highlighting
@@ -377,7 +390,7 @@ Default setting: B<standard>.
 
 =item I<-m --morphology>
 
-Provide morphology informations.
+Provide morphology information.
 
 Possible values: B<standard>, B<none> or B<forcedAll>.
 
@@ -548,7 +561,7 @@ and an example with authentication credentials:
  export http_proxy=http://max:34dwe2@172.16.120.120:3128
 
 As security is always important, I have to warn you, that
-other users on the same machine can read your enviroment
+other users on the same machine can read your environment
 using the 'ps -e ..' command, so this is not recommended.
 
 The most secure way for proxy authentication is just to
@@ -588,9 +601,9 @@ to me, thanks.
 
 =head1 COPYRIGHT
 
-B<leo> copyleft 2000-2012 Thomas Linden. All rights reserved.
+B<leo> copyleft 2000-2013 Thomas Linden. All rights reserved.
 
-http://dict.leo.org/ copyright (c) 1995-2012 LEO Dictionary Team.
+http://dict.leo.org/ copyright (c) 1995-2013 LEO Dictionary Team.
 
 
 The search results returned by B<leo> are based on the work
@@ -613,6 +626,6 @@ browser, what is not prohibited. At least not today.
 
 =head1 VERSION
 
-This is the manpage for B<leo> version B<1.35>.
+This is the manpage for B<leo> version B<1.36>.
 
 =cut

@@ -1,11 +1,11 @@
 #
-# Copyleft (l) 2000-2008 by Thomas Linden <tom@daemon.de>. leo may be
+# Copyleft (l) 2000-2013 by Thomas Linden <tom@daemon.de>. leo may be
 # used and distributed under the terms of the GNU General Public License.
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.35;
+$WWW::Dict::Leo::Org::VERSION = 1.36;
 
 use strict;
 use warnings;
@@ -231,6 +231,7 @@ Accept-Language: en_US, en\r\n);
   $this->{Linecount} = 1;
   my $p = HTML::TableParser->new( \@request,
 				  { Decode => 1, Trim => 1, Chomp => 1, DecodeNBSP => 1 } );
+  $site=~s/&#160;/\&nbsp\;/g;
   $p->parse($site);
 
   # put the rest on the stack, if any
@@ -381,7 +382,7 @@ Possible values: on, off.
 
 =item I<-Morphology>
 
-Provide morphology informations.
+Provide morphology information.
 
 Default: standard.
 
@@ -505,10 +506,10 @@ L<leo>
 =head1 COPYRIGHT
 
 WWW::Dict::Leo::Org -
-Copyright (c) 2007-2012 by Thomas Linden
+Copyright (c) 2007-2013 by Thomas Linden
 
 L<http://dict.leo.org/> -
-Copyright (c) 1995-2012 LEO Dictionary Team.
+Copyright (c) 1995-2013 LEO Dictionary Team.
 
 =head1 AUTHOR
 
