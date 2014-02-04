@@ -1,3 +1,8 @@
+1.37:
+
+fixed rt.cpan.org#92679, the site url and table structure
+changed.
+
 1.36:
 
 applied patch rt.cpan.org#35543, which fixes handling

@@ -1,11 +1,11 @@
 #
-# Copyleft (l) 2000-2013 by Thomas Linden <tom@daemon.de>. leo may be
+# Copyleft (l) 2000-2014 by Thomas Linden <tom@daemon.de>. leo may be
 # used and distributed under the terms of the GNU General Public License.
 # All other brand and product names are trademarks, registered trademarks
 # or service marks of their respective holders.
 
 package WWW::Dict::Leo::Org;
-$WWW::Dict::Leo::Org::VERSION = 1.36;
+$WWW::Dict::Leo::Org::VERSION = 1.37;
 
 use strict;
 use warnings;
@@ -149,7 +149,7 @@ sub translate {
     }
     my($host, $pport) = split /:/, $proxy;
     if ($pport) {
-      $url = "http://$ip:$port/$lang{speak}";
+      $url = "http://$ip:$port/dictQuery/m-vocab/$lang{speak}/de.html";
       $port = $pport;
     }
     else {
@@ -160,7 +160,7 @@ sub translate {
   }
   else {
     $this->debug( "connecting to site:", $ip, "port", $port);
-    $url = "/$lang{speak}";
+    $url = "/dictQuery/m-vocab/$lang{speak}/de.html";
   }
 
   my $conn = new IO::Socket::INET(
@@ -224,7 +224,7 @@ Accept-Language: en_US, en\r\n);
   #print $site;
 
   my @request = ({
-		  id  => 3.1,
+		  id  => 3,
 		  row => sub { $this->row(@_); }
 		  }
 		 );
@@ -506,10 +506,10 @@ L<leo>
 =head1 COPYRIGHT
 
 WWW::Dict::Leo::Org -
-Copyright (c) 2007-2013 by Thomas Linden
+Copyright (c) 2007-2014 by Thomas Linden
 
 L<http://dict.leo.org/> -
-Copyright (c) 1995-2013 LEO Dictionary Team.
+Copyright (c) 1995-2014 LEO Dictionary Team.
 
 =head1 AUTHOR
 
