@@ -1,3 +1,7 @@
+1.39:
+
+fixed rt.cpan.org#91464: disable caching if DB_File is not found.
+
 1.38:
 
 fixed rt.cpan.org#92944, missed translations. The problem was,
